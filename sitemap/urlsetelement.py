@@ -49,7 +49,7 @@ class UrlSetElement(object):
         This parameter is optional. It should be in the W3C Datetiem format. This 
         format allows you to omit the time portion, if desired, and use YYYY-MM-DD
         """
-        if 'lastmod' in args:
+        if 'lastmod' in args and args['lastmod']:
             try:
                 date = iso8601.parse_date(args['lastmod'])
                 self._lastmod = date

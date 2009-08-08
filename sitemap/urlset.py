@@ -1,7 +1,7 @@
 
 from lxml import etree
 from cStringIO import StringIO
-from urllib import urlopen
+from urllib2 import build_opener, Request
 import os
 import re
 import sys
@@ -17,9 +17,12 @@ class UrlSet(object):
     """
 
     @staticmethod
-    def from_url(url, **kwargs):
+    def from_url(url, user_agent='PythonSitemapParser/1.0', **kwargs):
         """ Create an urlset from an url """
-        return UrlSet(urlopen(url), url, **kwargs)
+        request = Request(url)
+        request.add_header('User-Agent', user_agent)
+        opener = build_opener()
+        return UrlSet(opener.open(request), url, **kwargs)
 
     @staticmethod
     def from_file(file, **kwargs):
@@ -75,7 +78,7 @@ class UrlSet(object):
                 try:
                     e = UrlSetElement(**element_data)
                     yield e
-                except ValueError:
+                except:
                     element_data = {}
                     continue
             elif tag in ['loc', 'lastmod', 'changefreq', 'priority']:

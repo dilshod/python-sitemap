@@ -1,6 +1,6 @@
 
 from lxml import etree
-from urllib import urlopen
+from urllib2 import build_opener, Request
 from cStringIO import StringIO
 
 from urlset import *
@@ -9,9 +9,13 @@ from exceptions import *
 class SitemapIndex(object):
 
     @staticmethod
-    def from_url(url, **kwargs):
+    def from_url(url, user_agent='PythonSitemapParser/1.0', **kwargs):
         """ Create a sitemap from an url """
-        return SitemapIndex(urlopen(url), url, **kwargs)
+        request = Request(url)
+        request.add_header('User-Agent', user_agent)
+        opener = build_opener()
+        kwargs['user_agent'] = user_agent
+        return SitemapIndex(opener.open(request), url, **kwargs)
 
     @staticmethod
     def from_file(file, **kwargs):
@@ -25,10 +29,11 @@ class SitemapIndex(object):
 
     source = property(lambda self:self._source)
 
-    def __init__(self, handle, source='handle', validate=True):
+    def __init__(self, handle, source='handle', validate=True, **kwargs):
         self._source = source
         self._handle = handle
         self._validate = validate
+        self._kwargs = kwargs
 
     def get_urlsets(self):
         """ Parse the xml file and generate the urlsets. """
@@ -43,7 +48,7 @@ class SitemapIndex(object):
             tag = self._remove_ns(elem.tag)
             if tag == 'sitemap' and location:
                 try:
-                    yield UrlSet.from_url(location, validate=self._validate)
+                    yield UrlSet.from_url(location, validate=self._validate, **self._kwargs)
                 except:
                     location = ''
                     continue
